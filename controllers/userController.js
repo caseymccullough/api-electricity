@@ -15,6 +15,19 @@ router.get('/', async (req, res) => {
    }
 })
 
+// get individual by id
+
+router.get('/:id', async (req, res) => {
+   try {
+       const updatedUser = await User.findById //findByIdAndUpdate(req.params.id, req.body, { new: true } )
+       res.status(200).json(updatedUser);
+   } catch (error) {
+       res.status(400).json({
+           msg: error.message
+       })
+   }
+ })
+
 // create a new load
 router.post('/', async (req, res) => {
    try{
