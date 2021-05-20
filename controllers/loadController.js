@@ -43,9 +43,9 @@ router.put('/:id', async (req, res) => {
    }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:name', async (req, res) => {
    try {
-         const deletedLoad = await Load.findByIdAndDelete(req.params.id);
+         const deletedLoad = await Load.findByNameAndDelete(req.params.name);
          res.status(200).json(deletedLoad);
    }catch (error){
       res.status(400).json({
