@@ -35,6 +35,8 @@ mongoose.connect(process.env.MONGO_URI, {
 })
 mongoose.connection.once('connected', () => console.log('Connected to Mongo Life is Good'));
 app.use(express.json());
+//app.use(bodyParser.json());
+
 app.use(cors());
 app.use('/load', require('./controllers/loadController'))
 app.use('/user', require('./controllers/userController'))
@@ -46,7 +48,7 @@ app.get('/', (req, res) => {
    res.send(`<h1>Electricity API</h1>`)
 })
 
-app.get('/someroute', (req, res) => {
+app.get('/test', (req, res) => {
    console.log('req.query: ', req.query);
    res.send('someroute accessed');
  });
@@ -54,6 +56,11 @@ app.get('/someroute', (req, res) => {
 
 // New <----- dont need this
 // Delete 
+app.delete('/:id')
+{
+   console.log ("call to deletebyid");
+}
+
 // Update 
 // Create
 // Edit <------- dont need this
