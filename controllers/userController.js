@@ -1,13 +1,24 @@
-const User = require('../models/User');
 const express = require('express');
-const router = express.Router()
+const router = express.Router();
+const User = require('../models/User');
+const Load = require('../models/Load');
 
-// get a list of all users
+//const bcrypt = require('bcryptjs');
+//const jwt = require('jsonwebtoken');
+
+
+/*///////////////
+ * 
+ * SHOW ALL ROUTES
+ * 
+ *///////////////
+
+// GET a list of all users
 router.get('/', async (req, res) => {
   
    try{
       const foundUsers = await User.find({});
-      res.status(200).json(foundUsers) // res object holds methods to facilitate data and file transfer 
+      res.status(200).json(foundUsers); // res object holds methods to facilitate data and file transfer 
    }catch(error){
       res.status(400).json({
          msg: error.message
@@ -15,55 +26,46 @@ router.get('/', async (req, res) => {
    }
 })
 
-// get individual by id
-
-router.get('/:id', async (req, res) => {
-   try {
-       const updatedUser = await User.findById //findByIdAndUpdate(req.params.id, req.body, { new: true } )
-       res.status(200).json(updatedUser);
-   } catch (error) {
-       res.status(400).json({
-           msg: error.message
-       })
-   }
- })
-
-// create a new load
+// SUBMIT A USER
 router.post('/', async (req, res) => {
-   try{
-      console.log(req.body)   
-      const createdLoad = await User.create(req.body);
-         res.status(200).json(createdLoad); 
-
+   try {     
+      const user = await new User ({
+         username: req.body.username,
+         password: req.body.password
+      });
+      const createdUser = await User.create(user);
+      res.status(200).json(createdUser); 
    }catch(err){
       res.status(400).json({
          msg: err.message
       })
    }
-})
+});
 
-// Update
-
-router.put('/:id', async (req, res) => {
-   try {
-       const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true } )
-       res.status(200).json(updatedUser);
-   } catch (error) {
-       res.status(400).json({
-           msg: error.message
-       })
+// GET A SPECIFIC USER
+router.get('/:userId', async (req, res) => {
+   try{
+      const user = await User.findById(req.params.userId);
+      res.json(user);
+   } catch (err) {
+      res.json( {message: err});
    }
-})
+});
 
-router.delete('/:id', async (req, res) => {
-   try {
-         const deletedUser = await User.findByIdAndDelete(req.params.id);
-         res.status(200).json(deletedUser);
-   }catch (error){
-      res.status(400).json({
-         msg: error.message
-      })
+// UPDATE A USER WITH A NEW LOAD
+router.patch('/:userId/addLoad', async (req, res) => {
+   try{
+      console.log ("in the patch addLoad function");
+
+      const currentUser = await User.findById(req.params.userId);  
+      currentUser.loads.push(req.body.loadId);
+ 
+      await currentUser.save(); // sends an updateOne() request.
+
+      res.json(currentUser);
+   }catch (err){
+      res.json({message: err});
    }
-})
+});
 
 module.exports = router;
