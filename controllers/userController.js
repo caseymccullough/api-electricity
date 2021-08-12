@@ -29,62 +29,83 @@ router.get('/', async (req, res) => {
 // });
 
 // GET user by username
-router.get('/:username', auth, (req, res) => {
-	const userQuery = User.findOne({ username: req.params.username }).select('-password').populate('folders').populate('friends', 'firstName lastName').populate('friendRequestsSent', 'firstName lastName').populate('friendRequestsReceived', 'firstName lastName')
+router.get('/:username', (req, res) => {
+	const userQuery = User.findOne({ username: req.params.username }).select('-password')
 	userQuery.exec((err, foundUser) => {
 		if (err) res.status(400).json({ msg: err.message })
 		else res.status(200).json(foundUser)
 	})
 })
 
-// // GET all loads for user
-// router.get('/:user_id/loads', auth, (req, res) => {
-// 	const loadQuery = Snippet.find({ owner: req.params.user_id })
-// 	snippetQuery.exec((err, foundSnippets) => {
-// 		if (err) res.status(400).json({ msg: err.message })
-// 		else res.status(200).json(foundSnippets)
-// 	})
-// })
+// GET loads by username
+router.get('/:username/loads', async (req, res) => {
+	const loadQuery =  User.findOne({ username: req.params.username })
+	loadQuery.exec((err, foundUser) => {
+		if (err) res.status(400).json({ msg: err.message })
+		else {
+			//const loads = userloads.map(id => Load.findById(id))
+			res.status(200).json(foundUser.loads)
+		}
+		
+	})
+})
 
-// router.get('/username/:userName', async (req, res) => {
-//    try{
-//       password = req.body.password;
-//       const user = await User.findOne ({userName: req.params.userName});
-//       res.json(user);
-//    } catch (err) {
-//       res.json( {message: err});
-//    }
-// });
+// GET single load
+router.get('/:username/loads/:loadid/', async (req, res) => {
+	try {
 
-// CREATE ROUTES ////////////////////////////////////////////
+		const loadQuery = Load.findById(req.params.loadid)
+		loadQuery.exec((err, foundLoad) => {
+			if (err) res.status(400).json({ msg: err.message })
+			else res.status(200).json(foundLoad)
+		})
 
-// Add a folder to a user
-// router.post('/:username/addfolder', auth, async (req, res) => {
-// 	try {
-// 		const newFolder = await Folder.create(req.body)
-// 		const updatedUser = await User.findByIdAndUpdate(newFolder.owner, {
-// 			$addToSet: { folders: newFolder._id }
-// 		}, { new: true })
-// 		if (updatedUser) res.status(200).json(newFolder)
-// 		else res.status(400).json({ msg: "unable to create folder" })
-// 	} catch (err) {
-// 		res.status(400).json({ msg: err.message })
-// 	}
-// })
-
+	} catch (err) {
+		res.status(200).json({ msg: err.message })
+	}
+})
 
 // UPDATE A USER WITH A NEW LOAD
-router.post('/:id/addload', auth, async (req, res) => {
+router.put('/:username/loads/add', async (req, res) => {
 	try {
-		const newLoad = await Load.create(req.body)
-		const updatedUser = await User.findByIdAndUpdate(req.params.id, {
-			$addToSet: { loads: newLoad._id }
+		const loadToAdd = await Load.create(req.body)
+		const updatedUser = await User.findOneAndUpdate({username: req.params.username}, {
+			$addToSet: { loads: loadToAdd }
 		}, { new: true })
-		if (updatedUser) res.status(200).json(newLoad)
+		if (updatedUser) res.status(200).json(updatedUser.loads)
 		else res.status(400).json({ msg: "unable to create load" })
 	} catch (err) {
 		res.status(400).json({ msg: err.message })
 	}
 })
+
+// UPDATE A USER REMOVED LOAD
+router.put('/:username/loads/:loadid/delete', async (req, res) => {
+	try {
+		// necessary? test to see . . . 
+		
+		const filter = {username: req.params.username}
+		
+		const updatedUser = User.findOneAndUpdate(
+			filter,
+			{
+				$pull: {
+					loads: { _id : req.params.loadid}
+				}
+			},
+			{new: true},
+			(err, data) => {
+				if (err) {
+					return res.status(500).json({ error: 'error in deleting address'});
+				}
+				res.json(data)
+			}
+		);
+		
+	} catch (err) {
+		res.status(200).json({ msg: err.message })
+	}
+})
+
 
 module.exports = router;

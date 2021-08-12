@@ -13,7 +13,7 @@ module.exports.auth = (req, res, next) => {
 		const token = authHeader.split(' ')[1]
 		jwt.verify(token, SECRET, (err, user) => {
 			if (err) {
-				res.sendStatus(403)
+				res.sendStatus(403)  // ** THIS KEEPS GETTING CALLED
 			} else 
 			{
 				if (user.username === req.params.username) {

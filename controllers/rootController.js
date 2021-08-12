@@ -23,7 +23,7 @@ router.post('/login', async (req, res) => {
 					id: foundUser._id,
 					username: foundUser.username
 				}, SECRET)
-				res.status(200).json({ token: token, id: foundUser._id })
+				res.status(200).json({ token: token, username: foundUser.username, user: foundUser })
 			} else res.status(500).json({ problem: "Crypt compare did not match. Did you change the hash algo?" })
 		}
 	})
